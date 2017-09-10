@@ -25,7 +25,6 @@ resetControlsNextFrame(false) {
 	 */
 	//botStrategies.push_back(new AutoKillWhenFrozenForTooLongStrategy(client, 10000));
 	//botStrategies.push_back(new Blmapv3StrategyWrapper(client));
-
 	botStrategies.push_back(new HookNearbyPlayerStrategy(client));
 	botStrategies.push_back(new JumpWhenStuckMovingStrategy(client));
 	botStrategies.push_back(new HammerNearbyPlayerStrategy(client));
