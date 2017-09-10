@@ -32,7 +32,6 @@ resetControlsNextFrame(false) {
 	botStrategies.push_back(new HammerNearbyPlayerStrategy(client));
 	botStrategies.push_back(new AlwaysVoteNoStrategy(client));
 
-
 	if(HeadlessMainSwitch::enabled) {
 		// auto-enabled when headless
 		enabled = true;
