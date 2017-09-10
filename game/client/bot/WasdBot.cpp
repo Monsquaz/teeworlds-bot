@@ -2,6 +2,8 @@
 #include "strategies/common/AutoKillWhenFrozenForTooLongStrategy.h"
 #include "strategies/common/JumpWhenStuckMovingStrategy.h"
 #include "strategies/common/HammerNearbyPlayerStrategy.h"
+#include "strategies/ctf5/HookNearbyPlayerStrategy.h"
+
 #include "BotUtil.h"
 #include "strategies/blmapv3/Blmapv3StrategyWrapper.h"
 #include "engine/client/headless/HeadlessMainSwitch.h"
@@ -20,10 +22,12 @@ resetControlsNextFrame(false) {
 	 * AutoKillWhenNoBotInputRecievedForTooLongStrategy - If no strategy changes input for a long time, respawn
 	 * Do smileys
 	 */
-	botStrategies.push_back(new AutoKillWhenFrozenForTooLongStrategy(client, 10000));
-	botStrategies.push_back(new Blmapv3StrategyWrapper(client));
-	botStrategies.push_back(new JumpWhenStuckMovingStrategy(client));
-	botStrategies.push_back(new HammerNearbyPlayerStrategy(client));
+	//botStrategies.push_back(new AutoKillWhenFrozenForTooLongStrategy(client, 10000));
+	//botStrategies.push_back(new Blmapv3StrategyWrapper(client));
+	//botStrategies.push_back(new JumpWhenStuckMovingStrategy(client));
+	//botStrategies.push_back(new HammerNearbyPlayerStrategy(client));
+	botStrategies.push_back(new HookNearbyPlayerStrategy(client));
+
 	
 	if(HeadlessMainSwitch::enabled) {
 		// auto-enabled when headless
@@ -42,10 +46,11 @@ void WasdBot::injectInput() {
 	}
 	if (debug) {
 		CCharacterCore* player = &client->m_PredictedChar;
-		printf("Pos+Vel : %7.2f %+6.2f : %7.2f %+6.2f\n", player->m_Pos.x, player->m_Vel.x, player->m_Pos.y, player->m_Vel.y);
+		//printf("Pos+Vel : %7.2f %+6.2f : %7.2f %+6.2f\n", player->m_Pos.x, player->m_Vel.x, player->m_Pos.y, player->m_Vel.y);
 		//printf("Aim %3d %3d\n", controls->m_InputData.m_TargetX, controls->m_InputData.m_TargetY);
 		//printf("%4.0f %4.0f\n", controls->m_MousePos.x, controls->m_MousePos.y);
 		//printf("%4.0f %4.0f\n", player->m_HookPos.x, player->m_HookPos.y);
+                printf("%3d, %3d\n", player->m_HookState, player->m_HookedPlayer);
 	}
 
 	if (resetControlsNextFrame) {
