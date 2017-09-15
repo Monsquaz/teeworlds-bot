@@ -2,6 +2,7 @@
 #include "strategies/common/AutoKillWhenFrozenForTooLongStrategy.h"
 #include "strategies/common/JumpWhenStuckMovingStrategy.h"
 #include "strategies/common/HammerNearbyPlayerStrategy.h"
+#include "strategies/common/AlwaysVoteNoStrategy.h"
 #include "strategies/ctf5/HookNearbyPlayerStrategy.h"
 
 #include "BotUtil.h"
@@ -16,7 +17,7 @@ jumpedLastStep(false),
 enabled(false),
 debug(false),
 resetControlsNextFrame(false) {
-	/* TODO strategies: 
+	/* TODO strategies:
 	 * HumanLikeMouseMovementStrategy - To appear more humanlike
 	 * DoubleJumpIfAboveFreezeAreaStrategy - Can avoid being killed, perhaps only helps rarely
 	 * AutoKillWhenNoBotInputRecievedForTooLongStrategy - If no strategy changes input for a long time, respawn
@@ -27,8 +28,11 @@ resetControlsNextFrame(false) {
 	//botStrategies.push_back(new JumpWhenStuckMovingStrategy(client));
 	//botStrategies.push_back(new HammerNearbyPlayerStrategy(client));
 	botStrategies.push_back(new HookNearbyPlayerStrategy(client));
+	botStrategies.push_back(new JumpWhenStuckMovingStrategy(client));
+	botStrategies.push_back(new HammerNearbyPlayerStrategy(client));
+	botStrategies.push_back(new AlwaysVoteNoStrategy(client));
 
-	
+
 	if(HeadlessMainSwitch::enabled) {
 		// auto-enabled when headless
 		enabled = true;
