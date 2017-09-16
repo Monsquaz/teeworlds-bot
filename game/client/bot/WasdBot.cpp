@@ -2,6 +2,7 @@
 #include "strategies/common/AutoKillWhenFrozenForTooLongStrategy.h"
 #include "strategies/common/JumpWhenStuckMovingStrategy.h"
 #include "strategies/common/HammerNearbyPlayerStrategy.h"
+#include "strategies/common/ShootNearbyPlayerStrategy.h"
 #include "strategies/common/AlwaysVoteNoStrategy.h"
 #include "strategies/ctf5/HookNearbyPlayerStrategy.h"
 
@@ -27,6 +28,7 @@ resetControlsNextFrame(false) {
 	//botStrategies.push_back(new Blmapv3StrategyWrapper(client));
 	botStrategies.push_back(new HookNearbyPlayerStrategy(client));
 	botStrategies.push_back(new JumpWhenStuckMovingStrategy(client));
+	botStrategies.push_back(new ShootNearbyPlayerStrategy(client));
 	botStrategies.push_back(new HammerNearbyPlayerStrategy(client));
 	botStrategies.push_back(new AlwaysVoteNoStrategy(client));
 

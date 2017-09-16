@@ -5,6 +5,8 @@ HookNearbyPlayerStrategy::HookNearbyPlayerStrategy(CGameClient* client) :
 BotStrategy(client) {
 }
 
+// TODO: Split into several strategies, or rename?
+
 void HookNearbyPlayerStrategy::execute() {
 
     CCharacterCore* me = &client->m_PredictedChar;
