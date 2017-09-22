@@ -19,6 +19,7 @@ private:
 	int maxYPos;
 	long chatTime;
 	long hookTime;
+	long attackTime;
 	long spotTime;
 	char chatMessage[200];
 

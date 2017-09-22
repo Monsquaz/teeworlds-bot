@@ -13,6 +13,7 @@ BotStrategy(client) {
   chatTime = 0;
   spotTime = 0;
   hookTime = 0;
+  attackTime = 0;
 }
 
 // TODO: Split into several strategies, or rename?
@@ -156,8 +157,10 @@ void HookNearbyPlayerStrategy::execute() {
 
       }
 
-      if (!(target->m_HookState == HOOK_GRABBED && target->m_HookedPlayer == -1 && targetVel->x < 5)) {
-        attack(&client->m_aClients[closestPlayerId].m_Predicted.m_Pos);
+      if (!(target->m_HookState == HOOK_GRABBED && target->m_HookedPlayer == -1 && fabs(targetVel->x) < 5)) {
+        if(getNowMillis() > (attackTime + 500)) {
+          attack(&client->m_aClients[closestPlayerId].m_Predicted.m_Pos);
+        }
       }
 
 
@@ -216,14 +219,19 @@ void HookNearbyPlayerStrategy::go(bool right, bool withHooking, float yPos) {
       if(hookLength < 200) {
         if(hookLength < 100 || (me->m_Pos.x > (me->m_HookPos.x+32) && right) || (me->m_Pos.x < (me->m_HookPos.x-32) && !right)) {
 
-          velThreshold = 20.0f * fabs(3886.0f/2.0f - (float)me->m_Pos.y) / (3886.0f/2.0f);
+          velThreshold = 5.0f; //20.0f * fabs(3886.0f/2.0f - (float)me->m_Pos.y) / (3886.0f/2.0f);
         //  printf("Threshold: %f, Vel: %f\n", velThreshold, me->m_Vel.y);
 
+
           if(
-               (yPos && ( (me->m_Pos.y - yPos) > 0 && me->m_Vel.y > velThreshold))
+               fabs(me->m_Vel.x) < 0.1
+            || fabs(me->m_Vel.y) < 0.1
+            || (fabs(me->m_Vel.y - me->m_Vel.x) < 0.2 && me->m_Vel.y > 1)
+            || (yPos && ( (me->m_Pos.y - yPos) > 0 && me->m_Vel.y > velThreshold))
             || (yPos && ( (me->m_Pos.y - yPos) < 0 && -me->m_Vel.y > velThreshold))
             || (   me->m_Vel.y  > velThreshold && (me->m_HookPos.y - me->m_Pos.y) > 0)
-            || ( (-me->m_Vel.y) > velThreshold && (me->m_HookPos.y - me->m_Pos.y) < 0)) {
+            || ( (-me->m_Vel.y) > velThreshold && (me->m_HookPos.y - me->m_Pos.y) < 0)
+          ) {
             // Release. We will shoot next tick
           //  printf("OK!\n");
             getControls()->m_InputData.m_Hook = 0;
@@ -237,22 +245,22 @@ void HookNearbyPlayerStrategy::go(bool right, bool withHooking, float yPos) {
 
     if (me->m_HookState != HOOK_GRABBED) {
       if(!me->m_pCollision) return;
-      float xCandidatesNormal[8] = {
-        2, 1, 0.5f, 3, 4, 5, 6, 7
+      float xCandidatesNormal[10] = {
+        7, 6, 5, 4, 3, 2, 1, 0.75f, 0.5f, 0.25f
       };
-      float xCandidatesDanger[15] = {
-        2, 1, 0.5f, 3, 4, 5, 6, 7, -2, -1, -3, -4, -5, -6, -7
+      float xCandidatesDanger[18] = {
+        7, 6, 5, 4, 3, 2, 1, 0.5f, 0.25f, -0.25f, -0.5f, -1, -2, -3, -4, -5, -6, -7
       };
 
       //printf("%f\n", me->m_Pos.y );
-      bool isDanger = true // TEMP?
+      bool isDanger = false // TEMP?
       && me->m_Pos.y > 4000;
       float *xCandidates = isDanger ? xCandidatesDanger : xCandidatesNormal;
-      if (isDanger || getNowMillis() > (hookTime + 200)) {
+      if (isDanger || getNowMillis() > (hookTime + 64)) {
         float candidateX;
         float candidateY;
 
-        for(int i = 0; i < (isDanger ? 15 : 8); i++) {
+        for(int i = 0; i < (isDanger ? 18 : 10); i++) {
           if(me->m_Vel.y >= 0) {
             candidateX = right?xCandidates[i]:-xCandidates[i];
             candidateY= -1;
@@ -262,7 +270,7 @@ void HookNearbyPlayerStrategy::go(bool right, bool withHooking, float yPos) {
           }
           vec2 hookDir = normalize(vec2(candidateX, candidateY));
           float steps = 25.0f;
-          for(float hookLength = 0.0f; hookLength < 300.0f; hookLength+=steps) {
+          for(float hookLength = 0.0f; hookLength < 350.0f; hookLength+=steps) {
             vec2 NewPos = me->m_HookPos + hookDir * hookLength;
             int Hit = me->m_pCollision->IntersectLine(me->m_Pos, NewPos, &NewPos, (vec2*)NULL);
             if(distance(me->m_Pos, NewPos) < 100) continue;
@@ -294,7 +302,10 @@ char *HookNearbyPlayerStrategy::getRandomLine() {
 
 void HookNearbyPlayerStrategy::attack(vec2* targetPos) {
     CCharacterCore* me = &client->m_PredictedChar;
+    //if(!me->m_pCollision) return;
 
+    float candidateX;
+    float candidateY;
     if (me->m_HookState == HOOK_RETRACTED) {
         getControls()->m_InputData.m_Hook = 0;
         return;
@@ -319,9 +330,17 @@ void HookNearbyPlayerStrategy::attack(vec2* targetPos) {
 
     //aim
     if (me->m_HookState != HOOK_GRABBED) {
-      getControls()->m_MousePos.x = targetPos->x - myPos->x;
-      getControls()->m_MousePos.y = targetPos->y - myPos->y;
+      candidateX = targetPos->x - myPos->x;
+      candidateY = targetPos->y - myPos->y;
+
+      // TODO: Only hook if we know we will hit
+      getControls()->m_MousePos.x = candidateX;
+      getControls()->m_MousePos.y = candidateY;
       getControls()->m_InputData.m_Hook = 1;
+      attackTime = getNowMillis();
+      //
+
+
     }
 
 
